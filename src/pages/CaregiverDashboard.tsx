@@ -29,6 +29,10 @@ export default function CaregiverDashboard() {
         checkAdminStatus();
         fetchAnimals();
         fetchCaregivers();
+        // Force scroll to top on component mount (fixes iOS issue)
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
     }, []);
 
     const checkAdminStatus = async () => {
