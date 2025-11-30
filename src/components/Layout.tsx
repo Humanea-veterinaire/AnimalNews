@@ -51,7 +51,7 @@ export default function Layout() {
                                 <LogOut className="w-4 h-4" />
                                 <span className="hidden sm:inline">Déconnexion</span>
                             </button>
-                        ) : (location.pathname === '/' || location.pathname === '/owner') && (
+                        ) : location.pathname === '/' && (
                             <Link to="/caregiver/login" className="text-sm font-medium text-gray-500 hover:text-humanea-bordeaux transition-colors">
                                 Espace soignant
                             </Link>
