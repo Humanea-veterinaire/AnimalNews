@@ -33,7 +33,7 @@ export default function Layout() {
         window.scrollTo(0, 0);
     }, [location.pathname]);
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+        <div className="min-h-screen bg-gray-50 flex flex-col font-sans" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             <header className="bg-white shadow-sm sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
