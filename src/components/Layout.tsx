@@ -27,6 +27,11 @@ export default function Layout() {
         await supabase.auth.signOut();
         navigate('/');
     };
+
+    // Scroll to top on route change (fixes mobile issue where header overlaps content)
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [location.pathname]);
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
             <header className="bg-white shadow-sm sticky top-0 z-50">
