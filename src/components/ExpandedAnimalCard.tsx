@@ -134,7 +134,7 @@ export default function ExpandedAnimalCard({ animal, lastSeen, onToggleStatus, o
             }
         } catch (error) {
             console.error('Error uploading report:', error);
-            alert('Erreur lors de la publication : ' + (error.message || JSON.stringify(error)));
+            alert('Erreur lors de la publication : ' + ((error as any).message || JSON.stringify(error)));
         } finally {
             setUploading(false);
         }
