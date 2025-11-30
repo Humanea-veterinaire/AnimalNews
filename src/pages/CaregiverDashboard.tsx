@@ -377,7 +377,7 @@ export default function CaregiverDashboard() {
                             <form onSubmit={handleAddAnimal} className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Nom <span className="text-humanea-bordeaux">*</span></label>
                                         <input
                                             required
                                             className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-humanea-bordeaux/20 focus:border-humanea-bordeaux outline-none"
@@ -386,7 +386,7 @@ export default function CaregiverDashboard() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Nom de famille (optionnel)</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Nom de famille</label>
                                         <input
                                             className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-humanea-bordeaux/20 focus:border-humanea-bordeaux outline-none"
                                             value={newAnimal.last_name || ''}
@@ -396,7 +396,7 @@ export default function CaregiverDashboard() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1 text-gray-700">Espèce</label>
+                                    <label className="block text-sm font-medium mb-1 text-gray-700">Espèce <span className="text-humanea-bordeaux">*</span></label>
                                     <select
                                         className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-humanea-bordeaux/20 focus:border-humanea-bordeaux outline-none"
                                         value={newAnimal.species}
@@ -407,7 +407,7 @@ export default function CaregiverDashboard() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1 text-gray-700">Email Propriétaire</label>
+                                    <label className="block text-sm font-medium mb-1 text-gray-700">Email propriétaire <span className="text-humanea-bordeaux">*</span></label>
                                     <input
                                         type="email"
                                         required
