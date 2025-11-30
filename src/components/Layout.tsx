@@ -8,7 +8,7 @@ export default function Layout() {
             <header className="bg-white shadow-sm sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
-                        <img src="/humanea-logo.png" alt="Humanea" className="h-10 md:h-12 w-auto" />
+                        <img src={`${import.meta.env.BASE_URL}humanea-logo.png`} alt="Humanea" className="h-10 md:h-12 w-auto" />
                     </Link>
                     <nav>
                         {location.pathname === '/' && (
