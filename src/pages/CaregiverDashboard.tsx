@@ -84,21 +84,21 @@ export default function CaregiverDashboard() {
             }
         }
 
-        if (!window.confirm("ATTENTION : Cette action supprimera définitivement le compte de ce soignant. Continuer ?")) return;
+        if (!window.confirm("ATTENTION : Cette action supprimera définitivement le compte de ce soignant (authentification + profil). Continuer ?")) return;
 
-        // Note: This requires the RLS policy created in the migration
-        const { error } = await supabase
-            .from('profiles')
-            .delete()
-            .eq('id', profileId);
+        // Call the RPC function to delete both auth user and profile
+        const { error } = await supabase.rpc('delete_user_completely', {
+            user_id: profileId
+        });
 
         if (!error) {
             setAllProfiles(allProfiles.filter(p => p.id !== profileId));
             // Also remove from caregivers list if present
             setCaregivers(caregivers.filter(c => c.id !== profileId));
+            alert("Utilisateur supprimé avec succès !");
         } else {
             console.error(error);
-            alert("Erreur lors de la suppression. Vérifiez que vous avez les droits nécessaires.");
+            alert("Erreur lors de la suppression : " + error.message);
         }
     };
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { AlertCircle } from 'lucide-react';
@@ -12,6 +12,18 @@ export default function CaregiverLogin() {
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [resetEmail, setResetEmail] = useState('');
     const [resetSuccess, setResetSuccess] = useState(false);
+
+    useEffect(() => {
+        // Check if user is already logged in
+        const checkAuth = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                // User is already logged in, redirect to dashboard
+                navigate('/caregiver/dashboard');
+            }
+        };
+        checkAuth();
+    }, [navigate]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -88,11 +100,7 @@ export default function CaregiverLogin() {
                     />
                 </div>
 
-                <div className="flex items-center justify-between text-sm">
-                    <label className="flex items-center gap-2">
-                        <input type="checkbox" className="rounded text-humanea-bordeaux focus:ring-humanea-bordeaux" />
-                        Se souvenir de moi
-                    </label>
+                <div className="flex justify-end text-sm">
                     <button
                         type="button"
                         onClick={() => setShowForgotPassword(true)}
