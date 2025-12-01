@@ -146,7 +146,7 @@ export default function ExpandedAnimalCard({ animal, lastSeen, onToggleStatus, o
     const handleSendEmail = async (e: React.MouseEvent) => {
         e.stopPropagation();
 
-        if (!window.confirm(`Prévenir par e-mail ${animal.owner_email} qu'il peut consulter les nouvelles de son animal sur ${window.location.origin} ?`)) return;
+        if (!window.confirm(`Prévenir par e-mail ${animal.owner_email} qu'il peut consulter les nouvelles de son animal ici ?`)) return;
 
         setSendingEmail(true);
         const webhookUrl = import.meta.env.VITE_MAKE_WEBHOOK_URL;
@@ -248,7 +248,7 @@ export default function ExpandedAnimalCard({ animal, lastSeen, onToggleStatus, o
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                         <button
                             onClick={onToggleStatus}
                             className={`p-2 rounded-full transition-colors ${animal.is_hospitalized
