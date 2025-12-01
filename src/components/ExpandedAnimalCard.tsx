@@ -146,7 +146,7 @@ export default function ExpandedAnimalCard({ animal, lastSeen, onToggleStatus, o
     const handleSendEmail = async (e: React.MouseEvent) => {
         e.stopPropagation();
 
-        if (!window.confirm(`Envoyer un email de notification à ${animal.owner_email} ?`)) return;
+        if (!window.confirm(`Prévenir par e-mail ${animal.owner_email} qu'il peut consulter les nouvelles de son animal sur ${window.location.origin} ?`)) return;
 
         setSendingEmail(true);
         const webhookUrl = import.meta.env.VITE_MAKE_WEBHOOK_URL;
@@ -248,7 +248,7 @@ export default function ExpandedAnimalCard({ animal, lastSeen, onToggleStatus, o
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap" onClick={e => e.stopPropagation()}>
                         <button
                             onClick={onToggleStatus}
                             className={`p-2 rounded-full transition-colors ${animal.is_hospitalized
@@ -260,14 +260,16 @@ export default function ExpandedAnimalCard({ animal, lastSeen, onToggleStatus, o
                             {animal.is_hospitalized ? <Archive className="w-4 h-4" /> : <RefreshCcw className="w-4 h-4" />}
                         </button>
 
-                        <button
-                            onClick={handleSendEmail}
-                            disabled={sendingEmail}
-                            className="p-2 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors disabled:opacity-50"
-                            title="Envoyer un email au propriétaire"
-                        >
-                            <Mail className="w-4 h-4" />
-                        </button>
+                        {animal.is_hospitalized && (
+                            <button
+                                onClick={handleSendEmail}
+                                disabled={sendingEmail}
+                                className="p-2 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors disabled:opacity-50"
+                                title="Envoyer un email au propriétaire"
+                            >
+                                <Mail className="w-4 h-4" />
+                            </button>
+                        )}
 
                         {!animal.is_hospitalized && (
                             <button
