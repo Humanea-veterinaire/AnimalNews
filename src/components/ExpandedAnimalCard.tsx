@@ -367,7 +367,7 @@ export default function ExpandedAnimalCard({ animal, lastSeen, onToggleStatus, o
                                                 </span>
                                             )}
                                         </div>
-                                        {editingReportId !== report.id && (
+                                        {editingReportId !== report.id && animal.is_hospitalized && (
                                             <button
                                                 onClick={() => handleEditReport(report)}
                                                 className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
