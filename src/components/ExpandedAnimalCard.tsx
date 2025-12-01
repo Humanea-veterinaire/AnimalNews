@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import type { Animal, DailyReport } from '../types';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Send, Archive, Trash2, RefreshCcw, Eye, ChevronUp, ChevronDown, Calendar } from 'lucide-react';
+import { Send, Archive, Trash2, RefreshCcw, Eye, ChevronUp, ChevronDown, Calendar, Mail, Edit2, Check, X } from 'lucide-react';
 
 interface ExpandedAnimalCardProps {
     animal: Animal;
@@ -19,6 +19,9 @@ export default function ExpandedAnimalCard({ animal, lastSeen, onToggleStatus, o
     const [loadingReports, setLoadingReports] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
+    const [sendingEmail, setSendingEmail] = useState(false);
+    const [editingReportId, setEditingReportId] = useState<string | null>(null);
+    const [editedContent, setEditedContent] = useState('');
 
     useEffect(() => {
         if (isExpanded) {
@@ -140,6 +143,70 @@ export default function ExpandedAnimalCard({ animal, lastSeen, onToggleStatus, o
         }
     };
 
+    const handleSendEmail = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+
+        if (!window.confirm(`Envoyer un email de notification à ${animal.owner_email} ?`)) return;
+
+        setSendingEmail(true);
+        const webhookUrl = import.meta.env.VITE_MAKE_WEBHOOK_URL;
+
+        if (!webhookUrl) {
+            alert("L'URL du webhook n'est pas configurée.");
+            setSendingEmail(false);
+            return;
+        }
+
+        try {
+            const response = await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    animal_name: animal.name,
+                    owner_email: animal.owner_email,
+                    site_url: window.location.origin,
+                    caregiver_name: "L'équipe Humanea"
+                })
+            });
+
+            if (response.ok) {
+                alert("Email envoyé avec succès !");
+            } else {
+                throw new Error('Erreur réseau');
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Erreur lors de l'envoi. Veuillez réessayer.");
+        } finally {
+            setSendingEmail(false);
+        }
+    };
+
+    const handleEditReport = (report: DailyReport) => {
+        setEditingReportId(report.id);
+        setEditedContent(report.content);
+    };
+
+    const handleSaveEdit = async (reportId: string) => {
+        const { error } = await supabase
+            .from('daily_reports')
+            .update({ content: editedContent })
+            .eq('id', reportId);
+
+        if (!error) {
+            setReports(reports.map(r => r.id === reportId ? { ...r, content: editedContent } : r));
+            setEditingReportId(null);
+            setEditedContent('');
+        } else {
+            alert("Erreur lors de la modification du rapport");
+        }
+    };
+
+    const handleCancelEdit = () => {
+        setEditingReportId(null);
+        setEditedContent('');
+    };
+
     const formatDate = (dateString?: string | null, showTime: boolean = true) => {
         if (!dateString) return "Date inconnue";
         try {
@@ -191,6 +258,15 @@ export default function ExpandedAnimalCard({ animal, lastSeen, onToggleStatus, o
                             title={animal.is_hospitalized ? "Marquer comme sorti" : "Réhospitaliser"}
                         >
                             {animal.is_hospitalized ? <Archive className="w-4 h-4" /> : <RefreshCcw className="w-4 h-4" />}
+                        </button>
+
+                        <button
+                            onClick={handleSendEmail}
+                            disabled={sendingEmail}
+                            className="p-2 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors disabled:opacity-50"
+                            title="Envoyer un email au propriétaire"
+                        >
+                            <Mail className="w-4 h-4" />
                         </button>
 
                         {!animal.is_hospitalized && (
@@ -277,16 +353,52 @@ export default function ExpandedAnimalCard({ animal, lastSeen, onToggleStatus, o
                         ) : reports.length > 0 ? (
                             reports.map((report) => (
                                 <div key={report.id} className="bg-white rounded-lg p-4 border border-gray-100 shadow-sm">
-                                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
-                                        <Calendar className="w-3 h-3" />
-                                        {format(new Date(report.created_at), "d MMMM 'à' HH:mm", { locale: fr })}
-                                        {(report.likes || 0) > 0 && (
-                                            <span className="ml-auto flex items-center gap-1 text-humanea-rose bg-humanea-rose/10 px-2 py-0.5 rounded-full font-medium">
-                                                👍 {report.likes}
-                                            </span>
+                                    <div className="flex items-center justify-between gap-2 text-xs text-gray-500 mb-3">
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="w-3 h-3" />
+                                            {format(new Date(report.created_at), "d MMMM 'à' HH:mm", { locale: fr })}
+                                            {(report.likes || 0) > 0 && (
+                                                <span className="flex items-center gap-1 text-humanea-rose bg-humanea-rose/10 px-2 py-0.5 rounded-full font-medium">
+                                                    👍 {report.likes}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {editingReportId !== report.id && (
+                                            <button
+                                                onClick={() => handleEditReport(report)}
+                                                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                                                title="Modifier"
+                                            >
+                                                <Edit2 className="w-3.5 h-3.5" />
+                                            </button>
                                         )}
                                     </div>
-                                    {report.image_url ? (
+                                    {editingReportId === report.id ? (
+                                        <div className="space-y-3">
+                                            <textarea
+                                                value={editedContent}
+                                                onChange={(e) => setEditedContent(e.target.value)}
+                                                className="w-full p-2 border rounded-lg text-sm resize-none focus:ring-2 focus:ring-humanea-bordeaux/20 focus:border-humanea-bordeaux outline-none"
+                                                rows={4}
+                                            />
+                                            <div className="flex gap-2 justify-end">
+                                                <button
+                                                    onClick={handleCancelEdit}
+                                                    className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1 transition-colors"
+                                                >
+                                                    <X className="w-3.5 h-3.5" />
+                                                    Annuler
+                                                </button>
+                                                <button
+                                                    onClick={() => handleSaveEdit(report.id)}
+                                                    className="px-3 py-1.5 text-sm bg-humanea-bordeaux text-white hover:bg-humanea-light rounded-lg flex items-center gap-1 transition-colors"
+                                                >
+                                                    <Check className="w-3.5 h-3.5" />
+                                                    Enregistrer
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : report.image_url ? (
                                         <div className="flex gap-4">
                                             <img
                                                 src={report.image_url}
