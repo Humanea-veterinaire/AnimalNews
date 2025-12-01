@@ -305,48 +305,50 @@ export default function ExpandedAnimalCard({ animal, lastSeen, onToggleStatus, o
             {/* Expanded Content (Reports) */}
             {isExpanded && (
                 <div className="border-t border-gray-100 p-6 bg-gray-50/50 rounded-b-xl">
-                    {/* Add Report Form */}
-                    <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 mb-6">
-                        <h4 className="text-sm font-semibold text-gray-700 mb-3">Donner des nouvelles</h4>
-                        <form onSubmit={handleAddReport}>
-                            <textarea
-                                className="w-full border rounded-lg p-3 min-h-[80px] text-sm focus:ring-2 focus:ring-humanea-bordeaux/20 focus:border-humanea-bordeaux outline-none resize-none"
-                                placeholder="Écrivez les nouvelles ici..."
-                                value={newReport}
-                                onChange={e => setNewReport(e.target.value)}
-                            />
+                    {/* Add Report Form - Only for hospitalized animals */}
+                    {animal.is_hospitalized && (
+                        <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 mb-6">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-3">Donner des nouvelles</h4>
+                            <form onSubmit={handleAddReport}>
+                                <textarea
+                                    className="w-full border rounded-lg p-3 min-h-[80px] text-sm focus:ring-2 focus:ring-humanea-bordeaux/20 focus:border-humanea-bordeaux outline-none resize-none"
+                                    placeholder="Écrivez les nouvelles ici..."
+                                    value={newReport}
+                                    onChange={e => setNewReport(e.target.value)}
+                                />
 
-                            <div className="flex items-center justify-between mt-3">
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        id={`image-upload-${animal.id}`}
-                                        className="hidden"
-                                        onChange={handleImageSelect}
-                                    />
-                                    <label
-                                        htmlFor={`image-upload-${animal.id}`}
-                                        className="cursor-pointer text-xs text-gray-600 hover:text-humanea-bordeaux flex items-center gap-2 transition-colors"
+                                <div className="flex items-center justify-between mt-3">
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            id={`image-upload-${animal.id}`}
+                                            className="hidden"
+                                            onChange={handleImageSelect}
+                                        />
+                                        <label
+                                            htmlFor={`image-upload-${animal.id}`}
+                                            className="cursor-pointer text-xs text-gray-600 hover:text-humanea-bordeaux flex items-center gap-2 transition-colors"
+                                        >
+                                            <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
+                                                📷 Photo
+                                            </div>
+                                            {selectedImage && <span className="text-green-600 truncate max-w-[100px]">{selectedImage.name}</span>}
+                                        </label>
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        disabled={(!newReport.trim() && !selectedImage) || uploading}
+                                        className="bg-humanea-bordeaux text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-humanea-light transition-colors disabled:opacity-50 text-sm"
                                     >
-                                        <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
-                                            📷 Photo
-                                        </div>
-                                        {selectedImage && <span className="text-green-600 truncate max-w-[100px]">{selectedImage.name}</span>}
-                                    </label>
+                                        <Send className="w-3 h-3" />
+                                        {uploading ? '...' : 'Publier'}
+                                    </button>
                                 </div>
-
-                                <button
-                                    type="submit"
-                                    disabled={(!newReport.trim() && !selectedImage) || uploading}
-                                    className="bg-humanea-bordeaux text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-humanea-light transition-colors disabled:opacity-50 text-sm"
-                                >
-                                    <Send className="w-3 h-3" />
-                                    {uploading ? '...' : 'Publier'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                            </form>
+                        </div>
+                    )}
 
                     {/* Reports List */}
                     <div className="space-y-4">
