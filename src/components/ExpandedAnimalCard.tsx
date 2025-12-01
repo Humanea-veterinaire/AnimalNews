@@ -227,7 +227,7 @@ export default function ExpandedAnimalCard({ animal, lastSeen, onToggleStatus, o
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="p-6 cursor-pointer"
             >
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-3">
+                <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-4">
                         <div className={`p-3 rounded-full transition-colors ${animal.is_hospitalized
                             ? 'bg-humanea-rose/10 text-humanea-rose'
@@ -248,40 +248,38 @@ export default function ExpandedAnimalCard({ animal, lastSeen, onToggleStatus, o
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between sm:justify-end gap-2" onClick={e => e.stopPropagation()}>
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                        <button
+                            onClick={onToggleStatus}
+                            className={`p-2 rounded-full transition-colors ${animal.is_hospitalized
+                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                }`}
+                            title={animal.is_hospitalized ? "Marquer comme sorti" : "Réhospitaliser"}
+                        >
+                            {animal.is_hospitalized ? <Archive className="w-4 h-4" /> : <RefreshCcw className="w-4 h-4" />}
+                        </button>
+
+                        {animal.is_hospitalized && (
                             <button
-                                onClick={onToggleStatus}
-                                className={`p-2 rounded-full transition-colors ${animal.is_hospitalized
-                                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                    : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                                    }`}
-                                title={animal.is_hospitalized ? "Marquer comme sorti" : "Réhospitaliser"}
+                                onClick={handleSendEmail}
+                                disabled={sendingEmail}
+                                className="p-2 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors disabled:opacity-50"
+                                title="Envoyer un email au propriétaire"
                             >
-                                {animal.is_hospitalized ? <Archive className="w-4 h-4" /> : <RefreshCcw className="w-4 h-4" />}
+                                <Mail className="w-4 h-4" />
                             </button>
+                        )}
 
-                            {animal.is_hospitalized && (
-                                <button
-                                    onClick={handleSendEmail}
-                                    disabled={sendingEmail}
-                                    className="p-2 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors disabled:opacity-50"
-                                    title="Envoyer un email au propriétaire"
-                                >
-                                    <Mail className="w-4 h-4" />
-                                </button>
-                            )}
-
-                            {!animal.is_hospitalized && (
-                                <button
-                                    onClick={onDelete}
-                                    className="p-2 rounded-full bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
-                                    title="Supprimer définitivement"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            )}
-                        </div>
+                        {!animal.is_hospitalized && (
+                            <button
+                                onClick={onDelete}
+                                className="p-2 rounded-full bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+                                title="Supprimer définitivement"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        )}
 
                         <div className="p-2 text-gray-400">
                             {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
