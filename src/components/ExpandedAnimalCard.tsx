@@ -198,7 +198,8 @@ export default function ExpandedAnimalCard({ animal, lastSeen, onToggleStatus, o
             setEditingReportId(null);
             setEditedContent('');
         } else {
-            alert("Erreur lors de la modification du rapport");
+            console.error("Update error:", error);
+            alert("Erreur lors de la modification du rapport : " + error.message);
         }
     };
 

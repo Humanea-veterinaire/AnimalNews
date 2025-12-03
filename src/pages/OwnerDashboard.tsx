@@ -13,6 +13,7 @@ export default function OwnerDashboard() {
     const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
     const [reports, setReports] = useState<DailyReport[]>([]);
     const [loading, setLoading] = useState(true);
+    const [likedReports, setLikedReports] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         if (email) fetchAnimals();
@@ -22,6 +23,28 @@ export default function OwnerDashboard() {
         if (selectedAnimal && email) {
             fetchReports(selectedAnimal.id);
             trackConnection(selectedAnimal.id);
+
+            // Set up real-time subscription for report updates
+            const channel = supabase
+                .channel(`reports_${selectedAnimal.id}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'daily_reports',
+                        filter: `animal_id=eq.${selectedAnimal.id}`
+                    },
+                    () => {
+                        // Refetch reports when any change occurs
+                        fetchReports(selectedAnimal.id);
+                    }
+                )
+                .subscribe();
+
+            return () => {
+                supabase.removeChannel(channel);
+            };
         }
     }, [selectedAnimal, email]);
 
@@ -48,6 +71,20 @@ export default function OwnerDashboard() {
                 new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
             );
             setReports(sorted);
+
+            // Fetch which reports this owner has liked
+            const reportIds = sorted.map(r => r.id);
+            if (reportIds.length > 0) {
+                const { data: likesData } = await supabase
+                    .from('report_likes')
+                    .select('report_id')
+                    .eq('owner_email', email)
+                    .in('report_id', reportIds);
+
+                if (likesData) {
+                    setLikedReports(new Set(likesData.map(l => l.report_id)));
+                }
+            }
         }
     };
 
@@ -153,41 +190,40 @@ export default function OwnerDashboard() {
                                                 <div className="flex justify-end">
                                                     <button
                                                         onClick={async () => {
-                                                            const storageKey = `liked_report_${report.id}`;
-                                                            const isLiked = !!localStorage.getItem(storageKey);
+                                                            // Call the toggle function
+                                                            const { data, error } = await supabase.rpc('toggle_report_like', {
+                                                                p_report_id: report.id,
+                                                                p_owner_email: email
+                                                            });
 
-                                                            if (isLiked) {
-                                                                // Unlike
-                                                                const { error } = await supabase.rpc('decrement_report_likes', { report_id: report.id });
-                                                                if (!error) {
-                                                                    localStorage.removeItem(storageKey);
-                                                                    setReports(reports.map(r =>
-                                                                        r.id === report.id
-                                                                            ? { ...r, likes: Math.max(0, (r.likes || 0) - 1) }
-                                                                            : r
-                                                                    ));
+                                                            if (!error && data && data.length > 0) {
+                                                                const result = data[0];
+
+                                                                // Update local state
+                                                                const newLikedReports = new Set(likedReports);
+                                                                if (result.liked) {
+                                                                    newLikedReports.add(report.id);
+                                                                } else {
+                                                                    newLikedReports.delete(report.id);
                                                                 }
-                                                            } else {
-                                                                // Like
-                                                                const { error } = await supabase.rpc('increment_report_likes', { report_id: report.id });
-                                                                if (!error) {
-                                                                    localStorage.setItem(storageKey, 'true');
-                                                                    setReports(reports.map(r =>
-                                                                        r.id === report.id
-                                                                            ? { ...r, likes: (r.likes || 0) + 1 }
-                                                                            : r
-                                                                    ));
-                                                                }
+                                                                setLikedReports(newLikedReports);
+
+                                                                // Update the report's like count
+                                                                setReports(reports.map(r =>
+                                                                    r.id === report.id
+                                                                        ? { ...r, likes: result.like_count }
+                                                                        : r
+                                                                ));
                                                             }
                                                         }}
-                                                        className={`p-2 rounded-full transition-all ${localStorage.getItem(`liked_report_${report.id}`)
+                                                        className={`p-2 rounded-full transition-all ${likedReports.has(report.id)
                                                             ? 'text-humanea-bordeaux'
                                                             : 'text-humanea-bordeaux hover:bg-humanea-bordeaux/5'
                                                             }`}
-                                                        title={localStorage.getItem(`liked_report_${report.id}`) ? "Je n'aime plus" : "J'aime"}
+                                                        title={likedReports.has(report.id) ? "Je n'aime plus" : "J'aime"}
                                                     >
                                                         <ThumbsUp
-                                                            className={`w-6 h-6 ${localStorage.getItem(`liked_report_${report.id}`)
+                                                            className={`w-6 h-6 ${likedReports.has(report.id)
                                                                 ? 'fill-current'
                                                                 : ''
                                                                 }`}
