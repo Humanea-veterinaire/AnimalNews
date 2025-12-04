@@ -129,7 +129,8 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
-  if new.email like '%@humanea-veterinaire.fr' then
+  -- Only create profile if email is confirmed AND email domain is correct
+  if new.email like '%@humanea-veterinaire.fr' AND new.email_confirmed_at IS NOT NULL then
     insert into public.profiles (id, first_name, last_name, email, role)
     values (
       new.id,
@@ -137,7 +138,8 @@ begin
       new.raw_user_meta_data->>'last_name',
       new.email,
       'caregiver'
-    );
+    )
+    on conflict (id) do nothing; -- Prevent duplicate inserts
   end if;
   return new;
 end;
@@ -146,3 +148,11 @@ $$;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- Trigger for email confirmation
+create trigger on_auth_user_email_confirmed
+  after update of email_confirmed_at on auth.users
+  for each row
+  when (old.email_confirmed_at IS NULL AND new.email_confirmed_at IS NOT NULL)
+  execute procedure public.handle_new_user();
+
